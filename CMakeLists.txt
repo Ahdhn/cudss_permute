@@ -1,8 +1,11 @@
 #CMake minimum requirement 
+#To run with cuDSS:
+#>> cmake -DCMAKE_PREFIX_PATH="C:\Program Files\NVIDIA cuDSS\v0.6\lib\12\cmake" ..
+
 cmake_minimum_required(VERSION 3.23 FATAL_ERROR)
 
 #Project name 
-set(project_name "CUDATemplate")#<TODO> change this to the name of your project 
+set(project_name "TestcuDSS")#<TODO> change this to the name of your project 
 project(${project_name} LANGUAGES CXX C CUDA)  
 
 #toggle between building a shared or static library
@@ -16,20 +19,9 @@ endif ()
 # Direct all output to /bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-
-include(FetchContent)
-# GoogleTest
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_Declare(googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        eaf9a3fd77869cf95befb87455a2e2a2e85044ff
-)
-FetchContent_MakeAvailable(googletest)
-include(GoogleTest)
-
-
 # Auto-detect GPU architecture
 include("cmake/AutoDetectCudaArch.cmake")
+include("cmake/metis.cmake")
 
 # CUDA and C++ compiler flags
 set(cxx_flags 
@@ -68,7 +60,37 @@ if(OpenMP_CXX_FOUND)
     target_link_libraries(developer_flags INTERFACE OpenMP::OpenMP_CXX)
 endif()
 
-enable_testing()
+#cudss
+find_package(cudss)
+message(STATUS "Found cuDSS version ${cudss_VERSION}")	
+target_link_directories(developer_flags INTERFACE ${cudss_LIBRARY_DIR})
 
-add_subdirectory(CUDALib)
-add_subdirectory(CUDAExec)
+if (WIN32)
+    target_include_directories(developer_flags INTERFACE ${cudss_INCLUDE_DIR})
+    target_link_libraries(developer_flags INTERFACE cudss)
+	
+	#Copying cuDSS DLL to the binary directory
+	add_custom_target(CopyCUDSSDLL)			
+	foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
+		add_custom_command(
+			OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CONFIG}/cudss64_0.dll"
+			COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CONFIG}"
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+				"${cudss_BINARY_DIR}/cudss64_0.dll"
+				"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CONFIG}/cudss64_0.dll"
+			DEPENDS "${cudss_BINARY_DIR}/cudss64_0.dll"
+			COMMENT "Copying cudss64_0.dll for ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CONFIG} configuration"
+			VERBATIM
+		)				
+		add_custom_target("CopyCUDSSDLL${CONFIG}"
+			DEPENDS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CONFIG}/cudss64_0.dll")				
+		add_dependencies(CopyCUDSSDLL "CopyCUDSSDLL${CONFIG}")				
+	endforeach()
+	
+else()
+    target_link_libraries(developer_flags INTERFACE cudss_static)
+endif()		
+target_compile_definitions(developer_flags INTERFACE USE_CUDSS)
+
+
+add_subdirectory(test_cudss)

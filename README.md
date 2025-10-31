@@ -1,14 +1,12 @@
-# CUDATemplate [![Windows](https://github.com/Ahdhn/CUDATemplate/actions/workflows/Windows.yml/badge.svg)](https://github.com/Ahdhn/CUDATemplate/actions/workflows/Windows.yml) [![Ubuntu](https://github.com/Ahdhn/CUDATemplate/actions/workflows/Ubuntu.yml/badge.svg)](https://github.com/Ahdhn/CUDATemplate/actions/workflows/Ubuntu.yml)
-My template for starting a new CUDA project using CMake on Windows (Visual Studio) or Linux (gcc, clang). The template also includes minimal YAML scripts for CI using Github Actions on both Windows (Visual Studio 2019) and Linux (Ubuntu). 
+# cudss_permute [![Windows](https://github.com/Ahdhn/cudss_permute/actions/workflows/Windows.yml/badge.svg)](https://github.com/Ahdhn/cudss_permute/actions/workflows/Windows.yml) [![Ubuntu](https://github.com/Ahdhn/cudss_permute/actions/workflows/Ubuntu.yml/badge.svg)](https://github.com/Ahdhn/cudss_permute/actions/workflows/Ubuntu.yml)
 
 
 ## Build 
-You might first need to change the project name in the `CMakeLists.txt` and the folder name and fill in any `TODO`. Then simply run 
-
+cuDSS path should be passed to cmake. The example below where to it is installed by default on Windows. 
 ```
 mkdir build
 cd build 
-cmake ..
+cmake -DCMAKE_PREFIX_PATH="C:\Program Files\NVIDIA cuDSS\v0.6\lib\12\cmake" ..
 ```
 
 Depending on the system, this will generate either a `.sln` project on Windows or a `make` file for a Linux system. 

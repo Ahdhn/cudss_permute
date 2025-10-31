@@ -89,8 +89,7 @@ if (WIN32)
 	
 else()
     target_link_libraries(developer_flags INTERFACE cudss_static)
-endif()		
-target_compile_definitions(developer_flags INTERFACE USE_CUDSS)
+endif()
 
 
 add_subdirectory(test_cudss)

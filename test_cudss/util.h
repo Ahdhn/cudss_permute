@@ -1,4 +1,6 @@
-#pragma once 
+#pragma once
+
+#include <cudss.h>
 #include <stdio.h>
 #include <stdlib.h>
 //********************** CUDA HandelError
@@ -21,6 +23,44 @@ inline void HandleError(cudaError_t err, const char* file, int line)
 // used for integer rounding
 #define DIVIDE_UP(num, divisor) (num + divisor - 1) / (divisor)
 //******************************************************************************
+
+#ifndef _CUDSS_ERROR_
+#define _CUDSS_ERROR_
+inline void cudssHandleError(cudssStatus_t status,
+                             const char*   file,
+                             const int     line)
+{
+
+    if (status != CUDSS_STATUS_SUCCESS) {
+        auto cudssGetErrorString = [](cudssStatus_t status) {
+            switch (status) {
+                case CUDSS_STATUS_SUCCESS:
+                    return "CUDSS_STATUS_SUCCESS";
+                case CUDSS_STATUS_NOT_INITIALIZED:
+                    return "CUDSS_STATUS_NOT_INITIALIZED";
+                case CUDSS_STATUS_ALLOC_FAILED:
+                    return "CUDSS_STATUS_ALLOC_FAILED";
+                case CUDSS_STATUS_INVALID_VALUE:
+                    return "CUDSS_STATUS_INVALID_VALUE";
+                case CUDSS_STATUS_NOT_SUPPORTED:
+                    return "CUDSS_STATUS_NOT_SUPPORTED";
+                case CUDSS_STATUS_EXECUTION_FAILED:
+                    return "CUDSS_STATUS_EXECUTION_FAILED";
+                case CUDSS_STATUS_INTERNAL_ERROR:
+                    return "CUDSS_STATUS_INTERNAL_ERROR";
+                default:
+                    return "UNKNOWN_ERROR";
+            }
+        };
+
+        printf(
+            "\n%s in %s at line %d\n", cudssGetErrorString(status), file, line);        
+
+        exit(EXIT_FAILURE);
+    }
+}
+#define CUDSS_ERROR(err) (cudssHandleError(err, __FILE__, __LINE__))
+#endif
 
 //********************** CUDATimer
 class CUDATimer

@@ -3,6 +3,7 @@
 #include <numeric>
 
 #include "metis.h"
+#include "util.h"
 
 idx_t* metis_permute(int n, const int* csr_offsets_h, const int* csr_columns_h)
 {
@@ -49,12 +50,17 @@ idx_t* metis_permute(int n, const int* csr_offsets_h, const int* csr_columns_h)
 
     options[METIS_OPTION_NUMBERING] = 0;
 
+    CPUTimer timer;
+    timer.start();
     int metis_ret = METIS_NodeND(
         &n, xadj.data(), adjncy.data(), NULL, options, h_permute, h_iperm);
+    timer.stop();
 
     if (metis_ret != 1) {
         fprintf(stderr, "METIS Failed");
     }
+
+    printf("\n Metis took: %f (ms)", timer.elapsed_millis());
 
     return h_permute;
 }

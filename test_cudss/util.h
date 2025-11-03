@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <random>
+#include <chrono>
+
 //********************** CUDA HandelError
 #ifndef _CUDA_ERROR_
 #define _CUDA_ERROR_
@@ -99,6 +101,34 @@ class CUDATimer
     cudaStream_t m_stream;
 };
 //******************************************************************************
+
+struct CPUTimer
+{
+    CPUTimer()
+    {
+    }
+    ~CPUTimer()
+    {
+    }
+    void start()
+    {
+        m_start = std::chrono::high_resolution_clock::now();
+    }
+    void stop()
+    {
+        m_stop = std::chrono::high_resolution_clock::now();
+    }
+    float elapsed_millis()
+    {
+        return std::chrono::duration<float, std::milli>(m_stop - m_start)
+            .count();
+    }
+
+   private:
+    std::chrono::high_resolution_clock::time_point m_start;
+    std::chrono::high_resolution_clock::time_point m_stop;
+};
+
 
 template <typename T>
 inline void fill_random(int n, T* h_in, T minn = -1.0, T maxx = 1.0)

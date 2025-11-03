@@ -199,7 +199,7 @@ int main(int argc, char** argv)
     CUDSS_ERROR(cudssExecute(
         handle, CUDSS_PHASE_REORDERING, solverConfig, solverData, A, x, b));
     timer.stop();
-    printf("\n Permutation took: %f (ms)", timer.elapsed_millis());
+    printf("\n cuDSS Permutation took: %f (ms)", timer.elapsed_millis());
     total_time += timer.elapsed_millis();
 
     // Symbolic factorization
@@ -212,7 +212,7 @@ int main(int argc, char** argv)
                              x,
                              b));
     timer.stop();
-    printf("\n Symbolic factorization took: %f (ms)", timer.elapsed_millis());
+    printf("\n cuDSS Symbolic factorization took: %f (ms)", timer.elapsed_millis());
     total_time += timer.elapsed_millis();
 
     // Factorization
@@ -220,7 +220,7 @@ int main(int argc, char** argv)
     CUDSS_ERROR(cudssExecute(
         handle, CUDSS_PHASE_FACTORIZATION, solverConfig, solverData, A, x, b));
     timer.stop();
-    printf("\n Factorization took: %f (ms)", timer.elapsed_millis());
+    printf("\n cuDSS Factorization took: %f (ms)", timer.elapsed_millis());
     total_time += timer.elapsed_millis();
 
     // Solving
@@ -228,10 +228,10 @@ int main(int argc, char** argv)
     CUDSS_ERROR(cudssExecute(
         handle, CUDSS_PHASE_SOLVE, solverConfig, solverData, A, x, b));
     timer.stop();
-    printf("\n Solving took: %f (ms)", timer.elapsed_millis());
+    printf("\n cuDSS Solving took: %f (ms)", timer.elapsed_millis());
     total_time += timer.elapsed_millis();
 
-    printf("\n\nTotal time: %f (ms)", total_time);
+    printf("\n\ncuDSS Total time: %f (ms)", total_time);
 
     // copy solution
     CUDA_ERROR(cudaMemcpy(

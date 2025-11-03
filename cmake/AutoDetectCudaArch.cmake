@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 
-find_package(CUDA REQUIRED)
+enable_language(CUDA)
 
 if(NOT DEFINED CUDA_ARCHS)
 	############################### Autodetect CUDA Arch #####################################################
@@ -37,16 +37,37 @@ if(NOT DEFINED CUDA_ARCHS)
 		}
 		]])
 	
-	set(cuda_detect_cmd  "${CUDA_NVCC_EXECUTABLE} -ccbin ${CMAKE_CXX_COMPILER} --run ${cuda_arch_autodetect_file}")
+	set(cuda_detect_cmd  "${CMAKE_CUDA_COMPILER} --run ${cuda_arch_autodetect_file}")
     message(STATUS "Executing: ${cuda_detect_cmd}")
-	execute_process(COMMAND "${CUDA_NVCC_EXECUTABLE}" "-ccbin" "${CMAKE_CXX_COMPILER}" "--run" "${cuda_arch_autodetect_file}"
+	execute_process(COMMAND "${CMAKE_CUDA_COMPILER}" "--run" "${cuda_arch_autodetect_file}"
 					#WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/CMakeFiles/"	
 					RESULT_VARIABLE CUDA_RETURN_CODE	
 					OUTPUT_VARIABLE dummy
 					ERROR_VARIABLE fprintf_output					
-					OUTPUT_STRIP_TRAILING_WHITESPACE)							
-	if(CUDA_RETURN_CODE EQUAL 0)			
-		set(CMAKE_CUDA_ARCHITECTURES ${fprintf_output})
+					OUTPUT_STRIP_TRAILING_WHITESPACE
+					ERROR_STRIP_TRAILING_WHITESPACE)							
+	if(CUDA_RETURN_CODE EQUAL 0)
+		# Clean the output to remove any warning messages and keep only numeric architecture values
+		string(REGEX REPLACE "[^0-9]" "" clean_archs "${fprintf_output}")
+		if(clean_archs STREQUAL "")
+			message(STATUS "GPU architectures auto-detect failed (no valid architectures found). Will build for all possible architectures.")      
+			set(CMAKE_CUDA_ARCHITECTURES all)
+		else()
+			# Convert string like "7586" to list like "75;86"
+			string(LENGTH "${clean_archs}" arch_length)
+			math(EXPR pairs "${arch_length} / 2")
+			set(arch_list "")
+			foreach(i RANGE 0 ${pairs})
+				math(EXPR start_pos "${i} * 2")
+				if(start_pos LESS arch_length)
+					string(SUBSTRING "${clean_archs}" ${start_pos} 2 arch_pair)
+					if(NOT arch_pair STREQUAL "")
+						list(APPEND arch_list ${arch_pair})
+					endif()
+				endif()
+			endforeach()
+			set(CMAKE_CUDA_ARCHITECTURES "${arch_list}")
+		endif()
 	else()
 		message(STATUS "GPU architectures auto-detect failed. Will build for all possible architectures.")      
 		set(CMAKE_CUDA_ARCHITECTURES all)			

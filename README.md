@@ -21,4 +21,4 @@ The `<permute_type>` argument can be one of the following:
 - `symrcm`
 - `symamd`
 
-A few example `.mtx` matrices are provided in the `/data` directory.
+A few example `.mtx` matrices are provided in the `/data` directory. A larger matrix is also provided as a `.zip` file; you can decompress it for more intensive testing.
